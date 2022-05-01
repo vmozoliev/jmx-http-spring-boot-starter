@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 
-import java.util.Map;
+import java.util.Collections;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 
@@ -26,7 +26,7 @@ public class JmxHttpConfiguration {
     public SimpleUrlHandlerMapping jmxHttpUrlHandlerMapping(JmxRequestHandler jmxRequestHandler) {
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setOrder(HIGHEST_PRECEDENCE);
-        mapping.setUrlMap(Map.of("/" + resolveEndpointName() + "/**", jmxRequestHandler));
+        mapping.setUrlMap(Collections.singletonMap("/" + resolveEndpointName() + "/**", jmxRequestHandler));
         return mapping;
     }
 

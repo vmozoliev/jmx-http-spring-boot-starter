@@ -6,7 +6,7 @@
 
     <groupId>com.belka</groupId>
     <artifactId>jmx-http-spring-boot-starter</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
