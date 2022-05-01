@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MBeanDtoMapper {
-    public static List<MBeanDto> getDtos(Map<String, ModelMBeanInfo> map) {
+    public static List<MBeanDto> getDto(Map<String, ModelMBeanInfo> map) {
         return map.entrySet().stream()
                 .map(entry -> getDto(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());

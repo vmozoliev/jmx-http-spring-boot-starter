@@ -13,13 +13,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-public class MBeanExecutor implements ApplicationContextAware {
+public class MBeanMethodInvoker implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
     private final MBeanOperationResolver mBeanOperationResolver;
 
-    public MBeanExecutor(MBeanOperationResolver mBeanOperationResolver) {
+    public MBeanMethodInvoker(MBeanOperationResolver mBeanOperationResolver) {
         this.mBeanOperationResolver = mBeanOperationResolver;
     }
 
@@ -28,7 +28,8 @@ public class MBeanExecutor implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    public Object execute(String mBean, String methodName, MBeanArgumentDto[] arguments) throws MBeanNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    public Object invoke(String mBean, String methodName, MBeanArgumentDto[] arguments)
+            throws MBeanNotFoundException, NoSuchMethodException {
         checkMBean(mBean, methodName);
         return invokeMethod(mBean, methodName, arguments);
     }
@@ -40,7 +41,7 @@ public class MBeanExecutor implements ApplicationContextAware {
         }
     }
 
-    private Object invokeMethod(String mBean, String methodName, MBeanArgumentDto[] arguments) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    private Object invokeMethod(String mBean, String methodName, MBeanArgumentDto[] arguments) throws NoSuchMethodException {
         Object bean = applicationContext.getBean(mBean);
         Class[] classes = Arrays.stream(arguments)
                 .map(argument -> ClassUtils.parseType(argument.getType()))
@@ -54,7 +55,8 @@ public class MBeanExecutor implements ApplicationContextAware {
         return invokeMethod(bean, methodName, classes, params);
     }
 
-    private Object invokeMethod(Object bean, String methodName, Class[] parameterTypes, Object[] params) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private Object invokeMethod(Object bean, String methodName, Class[] parameterTypes, Object[] params)
+            throws NoSuchMethodException {
         Method method = bean.getClass().getDeclaredMethod(methodName, parameterTypes);
         try {
             return method.invoke(bean, params);

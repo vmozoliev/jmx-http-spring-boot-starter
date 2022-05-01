@@ -7,8 +7,7 @@ import com.belka.jmxhttp.register.dto.MBeanArgumentDto;
 import com.belka.jmxhttp.register.dto.MBeanDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.HandlerMapping;
 
@@ -19,11 +18,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class JmxRequestHandler implements HttpRequestHandler {
+@Slf4j
+public class JmxHttpRequestHandler implements HttpRequestHandler {
 
-    private Logger log = LoggerFactory.getLogger(JmxRequestHandler.class);
-
-    private final MBeanExecutor mBeanExecutor;
+    private final MBeanMethodInvoker mBeanMethodInvoker;
     private final MBeanInfoRegister mBeanInfoRegister;
     private final ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -31,8 +29,8 @@ public class JmxRequestHandler implements HttpRequestHandler {
     private final ThreadLocal<HttpServletResponse> responseThreadLocal = new ThreadLocal<>();
 
 
-    public JmxRequestHandler(MBeanExecutor mBeanExecutor, MBeanInfoRegister mBeanInfoRegister) {
-        this.mBeanExecutor = mBeanExecutor;
+    public JmxHttpRequestHandler(MBeanMethodInvoker mBeanMethodInvoker, MBeanInfoRegister mBeanInfoRegister) {
+        this.mBeanMethodInvoker = mBeanMethodInvoker;
         this.mBeanInfoRegister = mBeanInfoRegister;
     }
 
@@ -60,7 +58,7 @@ public class JmxRequestHandler implements HttpRequestHandler {
                 doList();
                 return;
             }
-            if (splitPaths(path, 1) == null) {
+            if (splitPath(path, 1) == null) {
                 doResponseWithStatus(400);
                 return;
             }
@@ -83,12 +81,12 @@ public class JmxRequestHandler implements HttpRequestHandler {
     }
 
     private void doList() throws IOException {
-        List<MBeanDto> mBeanDtoList = MBeanDtoMapper.getDtos(mBeanInfoRegister.getMBeans());
+        List<MBeanDto> mBeanDtoList = MBeanDtoMapper.getDto(mBeanInfoRegister.getMBeans());
         doResponse(mBeanDtoList);
     }
 
     private void executeMBeanMethod(String beanNameMethod) throws IOException {
-        String[] paths = splitPaths(beanNameMethod, 2);
+        String[] paths = splitPath(beanNameMethod, 2);
         if (paths == null) {
             doResponseWithStatus(400);
             return;
@@ -102,11 +100,11 @@ public class JmxRequestHandler implements HttpRequestHandler {
         try {
             MBeanArgumentDto[] arguments = mapper.readValue(requestThreadLocal.get().getReader(), MBeanArgumentDto[].class);
 
-            result = mBeanExecutor.execute(beanName, methodName, arguments);
+            result = mBeanMethodInvoker.invoke(beanName, methodName, arguments);
         } catch (MBeanNotFoundException | NoSuchMethodException e) {
             doResponseWithStatus(404, e);
             return;
-        } catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             doResponseWithStatus(400, e);
             return;
         }
@@ -117,7 +115,7 @@ public class JmxRequestHandler implements HttpRequestHandler {
         return (String) requestThreadLocal.get().getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
     }
 
-    private String[] splitPaths(String path, int expected) {
+    private String[] splitPath(String path, int expected) {
         String[] paths = path.split("/");
         if (paths.length != expected) {
             return null;

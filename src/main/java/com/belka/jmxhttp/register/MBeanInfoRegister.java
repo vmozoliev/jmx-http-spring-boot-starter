@@ -44,7 +44,10 @@ public class MBeanInfoRegister implements BeanFactoryAware, ApplicationContextAw
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        detectMBeans(applicationContext);
+    }
 
+    private void detectMBeans(ApplicationContext applicationContext) {
         String[] beans = BeanFactoryUtils.beanNamesForAnnotationIncludingAncestors(applicationContext,
                 ManagedResource.class);
 
@@ -70,4 +73,5 @@ public class MBeanInfoRegister implements BeanFactoryAware, ApplicationContextAw
 
         this.mbeansMap = Collections.unmodifiableMap(beansMap);
     }
+
 }

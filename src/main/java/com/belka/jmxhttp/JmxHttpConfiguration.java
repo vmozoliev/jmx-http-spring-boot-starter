@@ -23,10 +23,10 @@ public class JmxHttpConfiguration {
     private Environment env;
 
     @Bean
-    public SimpleUrlHandlerMapping jmxHttpUrlHandlerMapping(JmxRequestHandler jmxRequestHandler) {
+    public SimpleUrlHandlerMapping jmxHttpUrlHandlerMapping(JmxHttpRequestHandler jmxHttpRequestHandler) {
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setOrder(HIGHEST_PRECEDENCE);
-        mapping.setUrlMap(Collections.singletonMap("/" + resolveEndpointName() + "/**", jmxRequestHandler));
+        mapping.setUrlMap(Collections.singletonMap("/" + resolveEndpointName() + "/**", jmxHttpRequestHandler));
         return mapping;
     }
 
@@ -36,13 +36,13 @@ public class JmxHttpConfiguration {
     }
 
     @Bean
-    public JmxRequestHandler jmxRequestHandler(MBeanExecutor mBeanExecutor, MBeanInfoRegister mBeanInfoRegister) {
-        return new JmxRequestHandler(mBeanExecutor, mBeanInfoRegister);
+    public JmxHttpRequestHandler jmxRequestHandler(MBeanMethodInvoker mBeanMethodInvoker, MBeanInfoRegister mBeanInfoRegister) {
+        return new JmxHttpRequestHandler(mBeanMethodInvoker, mBeanInfoRegister);
     }
 
     @Bean
-    public MBeanExecutor mBeanExecutor(MBeanOperationResolver mBeanOperationResolver) {
-        return new MBeanExecutor(mBeanOperationResolver);
+    public MBeanMethodInvoker mBeanExecutor(MBeanOperationResolver mBeanOperationResolver) {
+        return new MBeanMethodInvoker(mBeanOperationResolver);
     }
 
     @Bean
