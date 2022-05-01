@@ -6,7 +6,7 @@ This starter looks for mBeans in the spring application and sets up controller t
 <dependency>
     <groupId>com.belka</groupId>
     <artifactId>jmx-http-starter</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
